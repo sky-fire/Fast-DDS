@@ -2753,6 +2753,9 @@ public:
     fastrtps::ResourceLimitedContainerConfig matched_subscriber_allocation;
 };
 
+/**
+ * Data sharing configuration kinds
+ */
 enum DataSharingKind : fastrtps::rtps::octet
 {
     /**
