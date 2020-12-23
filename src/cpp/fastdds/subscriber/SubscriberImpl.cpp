@@ -627,7 +627,6 @@ SubscriberListener* SubscriberImpl::get_listener_for(
     return participant_->get_listener_for(status);
 }
 
-
 } /* namespace dds */
 } /* namespace fastdds */
 } /* namespace eprosima */
