@@ -39,6 +39,7 @@ public:
 
     RTPS_DllAPI ReaderQos()
     {
+        data_sharing.off();
     }
 
     RTPS_DllAPI virtual ~ReaderQos()
@@ -65,7 +66,8 @@ public:
                (m_lifespan == b.m_lifespan) &&
                (m_disablePositiveACKs == b.m_disablePositiveACKs) &&
                (type_consistency == b.type_consistency) &&
-               (representation == b.representation);
+               (representation == b.representation) &&
+               (data_sharing == b.data_sharing);
     }
 
     //!Durability Qos, implemented in the library.
@@ -121,6 +123,9 @@ public:
 
     //!Disable positive ACKs QoS
     DisablePositiveACKsQosPolicy m_disablePositiveACKs;
+
+    //!Information for data sharing compatibility check.
+    DataSharingQosPolicy data_sharing;
 
     /**
      * Set Qos from another class

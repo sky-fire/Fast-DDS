@@ -28,6 +28,8 @@
 #include <fastrtps/utils/TimedConditionVariable.hpp>
 #include "../history/ReaderHistory.h"
 
+#include <functional>
+
 namespace eprosima {
 namespace fastrtps {
 namespace rtps {
@@ -39,6 +41,7 @@ class WriterProxy;
 struct CacheChange_t;
 struct ReaderHistoryState;
 class WriterProxyData;
+class DataSharingListener;
 
 /**
  * Class RTPSReader, manages the reception of data from its matched writers.
@@ -268,6 +271,36 @@ public:
         m_trustedWriterEntityId = writer;
     }
 
+    /**
+     * Assert the liveliness of a matched writer.
+     * @param writer GUID of the writer to assert.
+     */
+    virtual void assert_writer_liveliness(
+            const GUID_t& writer) = 0;
+
+    /**
+     * Called when the user has retrieved a change from the history.
+     * @param change Pointer to the change to ACK
+     * @param writer Writer proxy of the \c change.
+     * @param mark_as_read Whether the \c change should be marked as read or not
+     */
+    virtual void change_read_by_user(
+            CacheChange_t* change,
+            const WriterProxy* writer,
+            bool mark_as_read = true) = 0;
+
+    /**
+     * Checks whether the sample is still valid or is corrupted
+     * @param data Pointer to the sample data to check
+     * @param writer GUID of the writer that sent \c data
+     * @param sn Sequence number related to \c data
+     * @return true if the sample is valid
+     */
+    RTPS_DllAPI bool is_sample_valid(
+            const void* data,
+            const GUID_t& writer,
+            const SequenceNumber_t& sn) const;
+
 protected:
 
     virtual bool may_remove_history_record(
@@ -341,6 +374,18 @@ protected:
             CacheChange_t** change,
             History::const_iterator hint) const;
 
+    /**
+     * Creates the listener for the datasharing notifications
+     *
+     * @param limits Resource limits for the number of matched datasharing writers
+     */
+    void create_datasharing_listener(
+            ResourceLimitedContainerConfig limits);
+
+    bool is_datasharing_compatible_with(
+            const WriterProxyData& wdata);
+
+
     //!ReaderHistory
     ReaderHistory* mp_history;
     //!Listener
@@ -366,6 +411,11 @@ protected:
     //! The liveliness lease duration of this reader
     Duration_t liveliness_lease_duration_;
 
+    //! Whether the writer is datasharing compatible or not
+    bool is_datasharing_compatible_ = false;
+    //! The listener for the datasharing notifications
+    std::unique_ptr<DataSharingListener> datasharing_listener_;
+
 private:
 
     RTPSReader& operator =(
@@ -373,7 +423,8 @@ private:
 
     void init(
             const std::shared_ptr<IPayloadPool>& payload_pool,
-            const std::shared_ptr<IChangePool>& change_pool);
+            const std::shared_ptr<IChangePool>& change_pool,
+            const ReaderAttributes& att);
 
 };
 

@@ -332,9 +332,11 @@ protected:
 
     DataWriter* user_datawriter_ = nullptr;
 
+    bool is_data_sharing_compatible_ = false;
+
     uint32_t fixed_payload_size_ = 0u;
 
-    std::shared_ptr<ITopicPayloadPool> payload_pool_;
+    std::shared_ptr<IPayloadPool> payload_pool_;
 
     std::unique_ptr<LoanCollection> loans_;
 
@@ -441,7 +443,11 @@ protected:
 
     std::shared_ptr<IPayloadPool> get_payload_pool();
 
-    void release_payload_pool();
+    bool release_payload_pool();
+
+    ReturnCode_t check_datasharing_compatible(
+            const fastrtps::rtps::WriterAttributes& writer_attributes,
+            bool& is_datasharing_compatible) const;
 
     template<typename SizeFunctor>
     bool get_free_payload_from_pool(
